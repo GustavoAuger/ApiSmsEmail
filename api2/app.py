@@ -14,13 +14,16 @@ client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 def get_db_connection():
     try:
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
         # Configura el entorno TNS_ADMIN
-        os.environ['TNS_ADMIN'] = 'D:/programas/Segurito/wallet'
+        wallet_path = os.path.join(BASE_DIR, "..", "oracle", "wallet")
+        os.environ['TNS_ADMIN'] = wallet_path
         print("TNS_ADMIN:", os.environ.get('TNS_ADMIN'))
 
         # Inicializa el cliente Oracle
         try:
-            oracledb.init_oracle_client(lib_dir=r"D:/oracle/instantclient_23_4")
+            oracle_client_path = os.path.join(BASE_DIR, "..", "oracle", "instantclient_23_4")
+            oracledb.init_oracle_client(lib_dir=oracle_client_path)
             print("Cliente Oracle inicializado")
         except Exception as e:
             print("Error al inicializar el cliente Oracle:", e)
