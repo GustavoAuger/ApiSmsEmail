@@ -9,5 +9,5 @@ def run_api2():
     api2_app.run(port=5001)
 
 if __name__ == "__main__":
-    Thread(target=run_api1).start()
     Thread(target=run_api2).start()
+    Thread(target=run_api1).start()
