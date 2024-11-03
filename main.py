@@ -1,15 +1,13 @@
-from flask import Flask
-from api1.app import api1_blueprint
-from api2.app import api2_blueprint
-import os
+from api1.app import app as api1_app
+from api2.app import app as api2_app
+from threading import Thread
 
-# Crea una única aplicación de Flask
-combined_app = Flask(__name__)
+def run_api1():
+    api1_app.run
 
-# Registra los Blueprints con prefijos de URL
-combined_app.register_blueprint(api1_blueprint, url_prefix='/api1')
-combined_app.register_blueprint(api2_blueprint, url_prefix='/api2')
+def run_api2():
+    api2_app.run
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Toma el puerto del entorno
-    combined_app.run(host='0.0.0.0', port=port)
+    Thread(target=run_api1).start()
+    Thread(target=run_api2).start()
