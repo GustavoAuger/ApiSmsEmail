@@ -3,10 +3,10 @@ from api2.app import app as api2_app
 from threading import Thread
 
 def run_api1():
-    api1_app.run(port=5000)
+    api1_app.run
 
 def run_api2():
-    api2_app.run(port=5001)
+    api2_app.run
 
 if __name__ == "__main__":
     Thread(target=run_api2).start()
