@@ -80,7 +80,7 @@ def obtener_destinatarios_sms(id_campana):
 
 
 
-@app.route('/api/send-sms', methods=['POST'])
+@app.route('/send-sms', methods=['POST'])
 def send_sms():
     # Obtener el código de campaña del cuerpo de la solicitud
     data = request.get_json()

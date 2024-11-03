@@ -94,7 +94,7 @@ def obtener_destinatarios(id_campana):
 	
 
 # API para enviar correos según el id de campaña
-@app.route('/api/send-emails', methods=['POST'])
+@app.route('/send-emails', methods=['POST'])
 def send_emails():
     data = request.json
     id_campana = data.get('id_campana')
