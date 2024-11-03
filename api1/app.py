@@ -138,5 +138,5 @@ def send_emails():
     return jsonify({"enviados": enviados, "errores": errores}), 200
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Usa el puerto de Railway o 5000 como valor por defecto
-    app.run(host='0.0.0.0', port=port)
+    
+    app.run(host='0.0.0.0', port=5000, debug=True)
