@@ -1,0 +1,2 @@
+*.dll filter=lfs diff=lfs merge=lfs -text
+oracle/instantclient_23_4/oraociei.dll filter=lfs diff=lfs merge=lfs -text
