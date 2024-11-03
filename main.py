@@ -1,5 +1,5 @@
-from api1 import app as api1_app
-from api2 import app as api2_app
+from api1.app import app as api1_app
+from api2.app import app as api2_app
 from threading import Thread
 
 def run_api1():
