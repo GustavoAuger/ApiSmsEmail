@@ -8,12 +8,7 @@ from . import create_app
 
 user_bp = Blueprint('user', __name__)
 
-create_app.config['MAIL_SERVER'] = 'smtp.gmail.com' # Cambia al servidor SMTP que uses
-create_app.config['MAIL_PORT'] = 587
-create_app.config['MAIL_USE_TLS'] = True
-create_app.config['MAIL_USERNAME'] = 'conmiscotusca2@gmail.com'  # correo de salida
-create_app.config['MAIL_PASSWORD'] = 'nnbo fxec wqvd dvaa' 
-mail = Mail(create_app)
+
 
 
 url = 'https://zwcokbhciyalafyflvkc.supabase.co'
@@ -125,55 +120,7 @@ def create_campaign():
         return jsonify("No se pudo registrar"), 500
         print("Response:", response)
 
-#################################################### DESTINATARIO 
-############### FALTA CORREGIR
-@user_bp.route('/enviar_email', methods=['GET'])
-def fetch_destinatarios():
-    response = supabase.table("Destinatario").select("*").execute()
-    destinatarios = []
-    if response.data:
-        return jsonify(response.data), 200
-        for row in rows:
-            destinatarios.append({"nombre": row[0], "email": row[1]})
-    else:
-        return destinatarios, jsonify("No se pudo traer a los destinatarios"), 500
 
-#################################################### DESTINATARIO 
-############### FALTA CORREGIR
-@user_bp.route('/send_email', methods=['POST'])
-def send_emails():
-    data = request.json
-    id_campana = data.get('id_campana')
-
-    if not id_campana:
-        return jsonify({"error": "Falta el ID de la campaña"}), 400
-
-    destinatarios = fetch_destinatarios(id_campana)
-    
-    if not destinatarios:
-        return jsonify({"error": "No se encontraron destinatarios para esta campaña"}), 404
-
-    enviados = []
-    errores = []
-
-    for destinatario in destinatarios:
-        nombre = destinatario['nombre']
-        email = destinatario['email']
-        subject = f"Hola, {nombre}! Aquí está tu mensaje personalizado"
-        body = f"Estimado/a {nombre}, este es un mensaje personalizado para ti."    
-
-        msg = Message(subject=subject,
-                        recipients=[email],
-                        body=body,
-                        sender=app.config['MAIL_USERNAME'])
-
-    try:
-        mail.send(msg)
-        enviados.append({"nombre": nombre, "email": email})
-    except Exception as e:
-        errores.append({"nombre": nombre, "email": email, "error": str(e)})
-
-    return jsonify({"enviados": enviados, "errores": errores}), 200
 
 
 ########################### AUTH
