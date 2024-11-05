@@ -18,13 +18,15 @@ supabase: Client = create_client(url, key)
 ############################ USUARIO
 @user_bp.route('/list_users', methods=['GET'])
 def fetch_users():
-    response = supabase.table("User").select("*").execute()
+    user_id = request.args.get('id')
+    response = supabase.table("User").select("*").eq("id", user_id).execute()
+
     if response.data:
         return jsonify(response.data), 200
         print("Response:", response)
     else:
         return jsonify("No se pudo traer a los usuarios"), 500
-        print("Response:", response)
+   
 
 @user_bp.route('/add_user', methods=['POST'])
 def create_user():
@@ -147,5 +149,5 @@ def login():
      ##   if not check_password_hash(user['email'], email):
        ##     return jsonify({"error": "email inválido"}), 401
 
-    return jsonify({"message": "Login exitoso !!", "user": {"email": user['email'], "id": user['id']}}), 200
+    return jsonify({"user_id": user['id']}), 200
 
