@@ -19,7 +19,7 @@ class Campana(Base):
     
     id = Column(Integer, primary_key=True)
     nombre_campana = Column(String, nullable=False)
-    templete = Column(String, nullable=False)
+    template = Column(String, nullable=False)
     canal = Column(Integer, nullable=False)
     user_id = Column(Integer, ForeignKey('User.id'), nullable=False)
     reporte_id = Column(Integer, ForeignKey('Reporte.id'), nullable=True)
