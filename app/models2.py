@@ -18,7 +18,7 @@ class Campana(Base):
     __tablename__ = 'Campana'
     
     id = Column(Integer, primary_key=True)
-    nombre_campaña = Column(String, nullable=False)
+    nombre_campana = Column(String, nullable=False)
     templete = Column(String, nullable=False)
     canal = Column(Integer, nullable=False)
     user_id = Column(Integer, ForeignKey('User.id'), nullable=False)
