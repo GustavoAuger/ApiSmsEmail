@@ -1,11 +1,12 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request,app
 from .models2 import User,Campana,Envio,Envio_destinatario,Destinatario
 from flask_mail import Message
-import supabase
+import supabase,os
 from supabase import Client,create_client
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import create_app,mail
-from flask_sqlalchemy import SQLAlchemy,query
+from twilio.rest import Client
+
 
 user_bp = Blueprint('user', __name__)
 
@@ -89,30 +90,13 @@ def fetch_campaigns():
     else:
         return jsonify({"error": "No se pudo traer las campañas"}), 500
     
-
-@user_bp.route('/list_campaigns_by_id', methods=['GET'])
-def fetch_campaigns_by_id():
-    user_id = request.args.get('user_id')
-    canal = request.args.get('canal')
-
-    if not user_id:
-        return jsonify({"error": "Se necesita ID de usuario"}), 400
-    if not canal:
-        return jsonify({"error": "Se necesita canal"}), 400
-
-    response = supabase.table("Campana").select("*").eq("user_id", user_id).eq("canal", canal).execute()
-
-    if response.data:
-        return jsonify(response.data), 200
-    else:
-        return jsonify({"error": "No se pudo traer las campañas para este usuario"}), 500
-
-
+###########################################################3
+###########################CREAR CAMPAÑA
 @user_bp.route('/add_campaigns', methods=['POST'])
 def create_campaign():
     data = request.json
     campana = Campana(**data)  # Create a User instance
-    response = supabase.table("Campaña").insert(data).execute()
+    response = supabase.table("Campana").insert(data).execute()
     if response.data:
         return jsonify(response.data), 200
         print("Response:", response)
@@ -134,35 +118,142 @@ def fetch_destinatarios():
 #############################################################
 # ###################### GET ENVIOS ######################3    
 @user_bp.route("/send_instances", methods=["GET"])
-def get_send_instances():
+def get_envios_asociados_a_campana():
     campana_id = request.args.get('fk_id_campana')
 
     if not campana_id:
         return jsonify({"error": "ID DE CAMPAÑA ES REQUERIDA"}), 400
     
     try:
-        response = supabase.table('send_instances').select('*').eq('campaign_id', campana_id).execute()
+        response = supabase.table('Envio').select('*').eq('fk_id_campana', campana_id).execute()
 
-        if response.status_code == 200:
-            return jsonify(response.data)
+        if response.data:
+            return jsonify(response.data),200
         else:
             return jsonify({"error": "Failed to fetch data"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+		
+    #########################################################
+    #################### GET TABLA INTERMEDIA################
+@user_bp.route("/intermediary_records", methods=["GET"])
+def get_intermediary_records_for_campaign():
+    campana_id = request.args.get('fk_id_campana')
+
+    if not campana_id:
+        return jsonify({"error": "ID DE CAMPAÑA ES REQUERIDA"}), 400
+
+    try:
+        response = supabase.table('Envio').select('id_envio').eq('fk_id_campana', campana_id).execute()
+
+        if not response.data:
+            return jsonify({"error": "No se encontraron envíos para esta campaña."}), 400
+        
+        envio_ids = [envio['id_envio'] for envio in response.data]
+
+        intermediary_response = supabase.table('Envio_destinatario') \
+            .select('*') \
+            .in_('fk_envio', envio_ids) \
+            .execute()
+
+        if not intermediary_response.data:
+            return jsonify({"error": "No se encontraron registros intermediarios."}), 400
+        
+        recipient_ids = [record['fk_destinatario'] for record in intermediary_response.data]
+
+        recipients_response = supabase.table('Destinatario') \
+            .select('id_destinatario', 'nombre_destinatario', 'email') \
+            .in_('id_destinatario', recipient_ids) \
+            .execute()
+
+        if recipients_response.data:
+            result = []
+            for record in intermediary_response.data:
+                recipient = next((rec for rec in recipients_response.data if rec['id_destinatario'] == record['fk_destinatario']), None)
+                if recipient:
+                    result.append({
+                        'Nombre': recipient['nombre_destinatario'],
+                        'Email': recipient['email']
+                    })
+
+            return jsonify(result), 200
+        else:
+            return jsonify({"error": "No se encontraron destinatarios para los registros intermediarios."}), 400
+            
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@user_bp.route('/fetch_recipients', methods=['GET'])
-def fetch_destinatarios_por_campanay(send_entity_id):
-    send_recipients = Envio_destinatario.query.filter_by(send_id=send_entity_id).all()
-    recipients = []
-    for sr in send_recipients:
-        recipient = Destinatario.query.get(sr.recipient_id)
-        if recipient:
-            recipients.append({
-                'nombre': recipient.name,
-                'email': recipient.email
-            })
-    return recipients
+@user_bp.route("/send_campaign_emails", methods=["POST"])
+def send_campaign_emails():
+    email_data = request.json.get('email_data')
+
+    if not email_data:
+        return jsonify({"error": "Se necesitan destinatarios"}), 400
+
+    try:
+        sent_emails = []
+        for email_info in email_data:
+            email_destinatario = email_info['email']
+            nombre_destinatario = email_info['nombre_destinatario']
+            subject = f"HOLA ESTIMADO {nombre_destinatario} !!"
+            body = f"CUERPO DE TU MENSAJE PARA CORREO: {email_destinatario} !!"
+
+            # Create the email message
+            message = Message(
+                subject=subject,
+                recipients=[email_destinatario],
+                body=body
+            )
+
+            try:
+                mail.send(message)
+                sent_emails.append({
+                    'recipient': nombre_destinatario,
+                    'email': email_destinatario,
+                    'status': 'ENVIADO'
+                })
+            except Exception as e:
+                sent_emails.append({
+                    'recipient': nombre_destinatario,
+                    'email': email_destinatario,
+                    'status': f'ERROR: {str(e)}'
+                })
+
+        return jsonify({'ENVIADOS': sent_emails}), 200
+
+    except Exception as e:
+        return jsonify({"ERROR": str(e)}), 500
+    
+############################################################
+########################sms##############################
+@user_bp.route('/send-sms', methods=['POST'])  # Change GET to POST
+def send_sms_to_all():
+    response = supabase.table('Destinatario').select('id_destinatario', 'nombre_destinatario', 'fono').execute()
+    
+    recipient_list = response.data
+    
+    if not recipient_list:
+        return jsonify({"error": "No recipients found"}), 404
+    
+    client = Client(
+        os.getenv('TWILIO_ACCOUNT_SID'),
+        os.getenv('TWILIO_AUTH_TOKEN')
+    )
+
+    for recipient in recipient_list:
+        try:
+            message = client.messages.create(
+                body=f"Hola, {recipient['nombre_destinatario']}! es un mensaje de prueba",
+                from_='+16502002145',
+                to=recipient['fono']
+            )
+            print(f"Message sent to {recipient['nombre_destinatario']} ({recipient['fono']}) - SID: {message.sid}")
+        except Exception as e:
+            print(f"Failed to send SMS to {recipient['nombre_destinatario']} ({recipient['fono']}): {str(e)}")
+    
+    return jsonify({"message": "Messages sent successfully to all recipients"},{"destinatarios":response.data}), 200
 
 #################################################### DESTINATARIO 
 @user_bp.route('/send_email', methods=['POST'])
@@ -199,7 +290,6 @@ def send_emails():
         errores.append({"nombre": nombre, "email": email, "error": str(e)})
 
     return jsonify({"enviados": enviados, "errores": errores}), 200
-
 
 ########################### AUTH
 @user_bp.route('/login', methods=['POST'])

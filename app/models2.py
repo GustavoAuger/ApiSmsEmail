@@ -9,6 +9,7 @@ class User(Base):
     
     id = Column(Integer, primary_key=True)
     cliente_name = Column(String, nullable=False)
+    cliente_apellido = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
     fono = Column(String,nullable=False,unique=True)
     password = Column(String,nullable=False,unique=False)
@@ -18,7 +19,7 @@ class Campana(Base):
     
     id = Column(Integer, primary_key=True)
     nombre_campaña = Column(String, nullable=False)
-    estado = Column(Boolean, nullable=False)
+    templete = Column(String, nullable=False)
     canal = Column(Integer, nullable=False)
     user_id = Column(Integer, ForeignKey('User.id'), nullable=False)
     reporte_id = Column(Integer, ForeignKey('Reporte.id'), nullable=True)
@@ -36,7 +37,7 @@ class Reporte(Base):
 class Envio(Base):
     __tablename__ = 'Envio'
     
-    id_envio = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     tipo_envio = Column(Boolean,nullable=False)
     fk_id_campana = Column(Integer, ForeignKey('Campana.id'), nullable=True)
 
