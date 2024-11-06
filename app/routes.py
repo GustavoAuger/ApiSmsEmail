@@ -100,7 +100,7 @@ def fetch_campaigns_by_id():
     if not canal:
         return jsonify({"error": "Se necesita canal"}), 400
 
-    response = supabase.table("Campaña").select("*").eq("user_id", user_id).eq("canal", canal).execute()
+    response = supabase.table("Campana").select("*").eq("user_id", user_id).eq("canal", canal).execute()
 
     if response.data:
         return jsonify(response.data), 200
