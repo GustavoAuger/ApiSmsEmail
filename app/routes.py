@@ -90,6 +90,22 @@ def fetch_campaigns():
     else:
         return jsonify({"error": "No se pudo traer las campañas"}), 500
     
+#######################CAMPAÑA POR ID############################################################
+@user_bp.route('/list_campaigns_by_id', methods=['GET'])
+def fetch_campaigns_by_id():
+    user_id = request.args.get('user_id')
+    canal = request.args.get('canal')
+
+    if not user_id:
+        return jsonify({"error": "Se necesita ID de usuario"}), 400
+    if not canal:
+        return jsonify({"error": "Se necesita canal"}), 400
+
+    response = supabase.table("Campana").select("*").eq("user_id", user_id).eq("canal", canal).execute()
+
+    if response.data:
+        return jsonify(response.data), 200    
+    
 ###########################################################3
 ###########################CREAR CAMPAÑA
 @user_bp.route('/add_campaigns', methods=['POST'])
