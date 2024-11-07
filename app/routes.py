@@ -37,10 +37,10 @@ def create_user():
     response = supabase.table("User").insert(data).execute()
     if response.data:
         return jsonify(response.data), 200
-        print("Response:", response)
+ 
     else:
         return jsonify("No se pudo traer a los usuarios"), 500
-        print("Response:", response)
+       
 
 @user_bp.route('/delete_user', methods=['DELETE'])
 def delete_user():
@@ -52,10 +52,9 @@ def delete_user():
     response = supabase.table("User").delete().eq("id", user_id).execute()
     if response.data:
         return jsonify(response.data), 200
-        print("Response:", response)
     else:
         return jsonify("No se pudo borrar el usuario"), 500
-        print("Response:", response)
+        
 
 @user_bp.route('/update_user/<user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -120,19 +119,19 @@ def create_campaign():
         return jsonify("No se pudo registrar"), 500
         print("Response:", response)
 
-##################################DESTINATARIOS###########3
-##########################################################
+##################################DESTINATARIOS###########
+########################################################### SE COMUNICA CON SENDMAIL #######
 @user_bp.route('/destinatarios_list', methods=['GET'])
-def fetch_destinatarios():
-    response = supabase.table("Destinatario").select("*").execute()
+def fetch_all_destinatarios_from_db():
+    """Fetch all recipients from Supabase database."""
+    response = supabase.table("Destinatario").select("email", "nombre_destinatario").execute()
     if response.data:
-        destinatarios = [response.data]
-        return destinatarios
+        return response.data
     else:
-        return jsonify("No se pudo traer a los destinatarios"), 500
+        return []
     
 #############################################################
-# ###################### GET ENVIOS ######################3    
+# ###################### GET ENVIOS ######################   
 @user_bp.route("/send_instances", methods=["GET"])
 def get_envios_asociados_a_campana():
     campana_id = request.args.get('fk_id_campana')
@@ -201,20 +200,31 @@ def get_intermediary_records_for_campaign():
         return jsonify({"error": str(e)}), 500
 
 
-@user_bp.route("/send_campaign_emails", methods=["POST"])
+@user_bp.route("/send-email", methods=["POST"])
 def send_campaign_emails():
-    email_data = request.json.get('email_data')
+    
+    id_campana = request.args.get('id_campana')
+    email_data = fetch_all_destinatarios_from_db()
+    response = supabase.table('Campana').select('template').eq('id_campana', id_campana).execute()
+
+    if response.data:
+    # Extract the template string from the response
+        template = response.data[0]['template']
 
     if not email_data:
         return jsonify({"error": "Se necesitan destinatarios"}), 400
+
+    if not id_campana:
+        return jsonify({"error": "Se necesita ID de la campaña"}), 400
 
     try:
         sent_emails = []
         for email_info in email_data:
             email_destinatario = email_info['email']
             nombre_destinatario = email_info['nombre_destinatario']
+            
             subject = f"HOLA ESTIMADO {nombre_destinatario} !!"
-            body = f"CUERPO DE TU MENSAJE PARA CORREO: {email_destinatario} !!"
+            body = template
 
             # Create the email message
             message = Message(
@@ -271,41 +281,6 @@ def send_sms_to_all():
     
     return jsonify({"message": "Messages sent successfully to all recipients"},{"destinatarios":response.data}), 200
 
-#################################################### DESTINATARIO 
-@user_bp.route('/send_email', methods=['POST'])
-def send_emails():
-    data = request.json
-    id_campana = data.get('id_campana')
-
-    if not id_campana:
-        return jsonify({"error": "Falta el ID de la campaña"}), 400
-
-    destinatarios = fetch_destinatarios()
-    
-    if not destinatarios:
-        return jsonify({"error": "No se encontraron destinatarios para esta campaña"}), 404
-
-    enviados = []
-    errores = []
-
-    for destinatario in destinatarios:
-        nombre = destinatario['nombre']
-        email = destinatario['email']
-        subject = f"Hola, {nombre}! Aquí está tu mensaje personalizado"
-        body = f"Estimado/a {nombre}, este es un mensaje personalizado para ti."    
-
-        msg = Message(subject=subject,
-                        recipients=[email],
-                        body=body,
-                        sender=create_app.config['MAIL_USERNAME'])
-
-    try:
-        mail.send(msg)
-        enviados.append({"nombre": nombre, "email": email})
-    except Exception as e:
-        errores.append({"nombre": nombre, "email": email, "error": str(e)})
-
-    return jsonify({"enviados": enviados, "errores": errores}), 200
 
 ########################### AUTH
 @user_bp.route('/login', methods=['POST'])
