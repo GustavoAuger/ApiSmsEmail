@@ -51,9 +51,9 @@ class Envio_destinatario(Base):
 class Destinatario(Base):
     __tablename__ = 'Destinatario'
     
-    id = Column(Integer, primary_key=True)
-    nombre_destinatario = Column(String, primary_key=True)
-    tipo_envio = Column(Boolean,nullable=False)
-    fk_id_campana = Column(Integer, ForeignKey('Campana.id'), nullable=True)
+    id_destinatario = Column(Integer, primary_key=True)
+    nombre_destinatario = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    fono = Column(String, nullable=False)
 
 
