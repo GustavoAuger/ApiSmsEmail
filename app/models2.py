@@ -17,7 +17,7 @@ class User(Base):
 class Campana(Base):
     __tablename__ = 'Campana'
     
-    id = Column(Integer, primary_key=True)
+    id_campana = Column(Integer, primary_key=True)
     nombre_campana = Column(String, nullable=False)
     template = Column(String, nullable=False)
     canal = Column(Integer, nullable=False)
