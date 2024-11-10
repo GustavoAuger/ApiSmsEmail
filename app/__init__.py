@@ -1,9 +1,5 @@
 from flask import Flask
-from .routers.user import user_bp
-from .routers.campaign import campaign_bp
-from .routers.report import report_bp
-from .routers.envio import envio_bp
-from .routers.models2 import db
+from .models2 import db
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -39,9 +35,5 @@ def create_app():
     db.init_app(app)
     
     # Registrar los blueprints sin prefix
-    app.register_blueprint(user_bp)
-    app.register_blueprint(campaign_bp)
-    app.register_blueprint(report_bp)
-    app.register_blueprint(envio_bp)
-    
+
     return app

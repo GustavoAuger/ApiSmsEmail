@@ -1,8 +1,10 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request,app
+from .models2 import User,Campana,Envio,Envio_destinatario,Destinatario
+from flask_mail import Message
 import supabase,os
 from supabase import Client,create_client
-from . import supabase, mail
-from flask_mail import Message
+from werkzeug.security import generate_password_hash, check_password_hash
+from . import create_app,mail
 from twilio.rest import Client
 
 envio_bp = Blueprint('envio', __name__)

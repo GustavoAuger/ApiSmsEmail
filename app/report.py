@@ -6,14 +6,13 @@ from supabase import Client,create_client
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import create_app,mail
 from twilio.rest import Client
-from flask import Blueprint
 
 report_bp = Blueprint('report', __name__)
 
 url = 'https://zwcokbhciyalafyflvkc.supabase.co'
 key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3Y29rYmhjaXlhbGFmeWZsdmtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk4OTMzODYsImV4cCI6MjA0NTQ2OTM4Nn0.QWNxXN5_rCDmPNaNpDDHpi5ws4su5XbM8s4ChlhrDGA'
 supabase: Client = create_client(url, key)
-##APIs POR INTEGAR Y DIVIDIR POR SERVICIO CORRESPONDIENTE
+##APIs POR INTEGAR Y DIVIDIR POR SERVICIO CORRESPONDIENTE --- EN DESARROOLLO / FALTA IMPLEMENTAR EN FRONT
 
 
 @report_bp.route('/add_user', methods=['POST'])
