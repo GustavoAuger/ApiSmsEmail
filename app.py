@@ -1,14 +1,12 @@
-from app import create_app, db
-from app.routes import user_bp
+from app import create_app, db  # Importa create_app y db desde el paquete app
 
-# Create the Flask application instance
+# Crear la instancia de la aplicación Flask
 app = create_app()
 
-# Create the tables in the database
+# Crear las tablas en la base de datos (si aún no se han creado)
 with app.app_context():
-    db.create_all()  # This creates the tables defined in your models
+    db.create_all()  # Esto crea las tablas definidas en tus modelos
 
-app.register_blueprint(user_bp)
-
+# Iniciar la aplicación Flask
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
