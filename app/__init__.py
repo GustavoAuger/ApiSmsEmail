@@ -1,6 +1,4 @@
 from flask import Flask
-from .models2 import db
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
 from flask_mail import Mail
