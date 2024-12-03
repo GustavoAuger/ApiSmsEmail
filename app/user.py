@@ -36,6 +36,7 @@ def login():
      ##   if not check_password_hash(user['email'], email):
        ##     return jsonify({"error": "email inválido"}), 401
 
+
     return jsonify({"id": user['id']}), 200
 @user_bp.route('/list_users', methods=['GET'])
 def fetch_users():
